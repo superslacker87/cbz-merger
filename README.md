@@ -1,25 +1,10 @@
-* Contents :toc:
-- [[#what-is-it][What is it?]]
-- [[#why-use-it][Why use it?]]
-- [[#export-modes][Export modes]]
-- [[#pre-requisites][Pre-requisites]]
-  - [[#apt-package-manager-debian--ubuntu--linux-mint][APT package manager (Debian / Ubuntu / Linux Mint)]]
-  - [[#arch-linux][Arch Linux]]
-  - [[#dnf-package-manager-fedora][DNF package manager (Fedora)]]
-  - [[#yum-package-manager-redhat--rhel--centos][Yum package manager (Redhat / RHEL / CentOS)]]
-- [[#installation][Installation]]
-- [[#usage][Usage]]
-  - [[#create-a-single-archive-file][Create a single archive file]]
-  - [[#create-a-file-per-volume][Create a file per volume]]
-- [[#closing-thoughts][Closing thoughts]]
+- What is it?
+  A cli-tool to merge several CBZ (zip) files into one main archive, or several archives divided by volume.
 
-* What is it?
-A cli-tool to merge several CBZ (zip) files into one main archive, or several archives divided by volume.
-
-* Why use it?
-Works great if you download full comics/mangas, which come in come organized in CBZ files (one CBZ per chapter, each one containing
-one image per page).
-That's a lot of images!
+- Why use it?
+  Works great if you download full comics/mangas, which come in come organized in CBZ files (one CBZ per chapter, each one containing
+  one image per page).
+  That's a lot of images!
 
 And if you would rather organize them in a single main file, or a file per volume, this tool will do the work for you.
 
@@ -27,185 +12,154 @@ This is also great if you read them on some kind of e-reader, like Kobo, since y
 
 [[./imgs/cbz-showcase.png]]
 
-* Export modes
-You can merge all your files into one of the two following options:
-+ One main file containing all the pages of your comic/manga.
-+ One file per volume, each one containing only the pages of its chapters.
+- Export modes
+  You can merge all your files into one of the two following options:
 
-*Each of these can be exported into either PDF, or CBZ.*
+* One main file containing all the pages of your comic/manga.
+* One file per volume, each one containing only the pages of its chapters.
 
-* Pre-requisites
-You'll need:
-+ Python3.12 (It does not work on the latest version of Python at the time of publishing, Python 3.14)
-+ pip
-+ Your CBZ files should have ordered alphabetically. (This should be de default if you download in bulk your mangas, because they should come sorted in some way so that you can easily read each chapter in order)
+_Each of these can be exported into either PDF, or CBZ._
 
+- Pre-requisites
+  You'll need:
 
-Get the latest version in your favorite Linux flavor.
-(Snipets taken from [[https://www.csestack.org/install-python-on-linux/][CSEstack]] and [[https://linuxconfig.org/install-pip-on-linux/][linuxconfig]])
+* Python3.12 (It does not work on the latest version of Python3 at the time of publishing, version Python 3.14)
+* pip
+* Your CBZ files should have ordered alphabetically. (This should be de default if you download in bulk your mangas, because they should come sorted in some way so that you can easily read each chapter in order)
 
-** APT package manager (Debian / Ubuntu / Linux Mint)
-#+begin_src sh
-# First update your local system's repository list
-sudo apt-get update
+Ensure you have version 3.12 installed alongside whatever version is currently installed. You can use both concurrently. Run the correct command for your flavor of Linux, or install the executable from the Python website
 
-# Install python3
-sudo apt-get install python3.12
+sudo apt install python3.12
 
-# Install pip for python3
-sudo apt install python3-pip
-#+end_src
-
-** Arch Linux
-#+begin_src sh
-# Install python3
 sudo pacman -S python3.12
 
-# Install pip
-sudo pacman -S python-pip
-#+end_src
-
-** DNF package manager (Fedora)
-#+begin_src sh
-# This installs both python and pip, in a nice little bundle. How convenient!
 sudo dnf install python3.12
-#+end_src
 
-** Yum package manager (Redhat / RHEL / CentOS)
-#+begin_src sh
-# Install python3
-sudo yum install python.12
+- Installation
+  \1. Clone the repository
 
-# pip is not available on core repositories, so you'll need this
-sudo yum install epel-release
-
-# Now you can actually install pip
-sudo yum install python-pip
-#+end_src
-
-* Installation
-You'll need to:
-
-1. Clone the repository
 2. Move inside the repo's directory
 3. [Optional] Create a virtual environment
    This might not be obligatory, but is highly recommendable to have a virtual environment for each project, to avoid conflicts between libraries and
    versions.
 4. Install the requirements (remember that you need Python for this)
 
-#+begin_src sh
 # Get the repo
+
 git clone https://github.com/superslacker87/cbz-merger.git
 cd cbz-merger
 
 # Create a virtual environment
+
 pip install virtualenv
 python3.12 -m venv venv
 
 # Activate the virtual environment
+
 source venv/bin/activate
 
 # Install the requirements
+
 pip install -r requirements.txt
-#+end_src
 
 Then go into usage.
 
-* Usage
-Remember that you have to be inside the directory of your cloned repository.
-From there, you can:
-+ Merge all your CBZs into a single file
-+ Merge your CBZ files by volume
+- Usage
+  Remember that you have to be inside the directory of your cloned repository.
+  From there, you can:
+
+* Merge all your CBZs into a single file
+* Merge your CBZ files by volume
 
 Both of these can be exported to:
-+ PDF
-+ CBZ
 
-** Create a single archive file
+- PDF
+- CBZ
+
+\*\* Create a single archive file
 #+begin_src sh
+
 # One of either:
 
 # Create CBZ archive
-python ./merge.py <path/to/cbzs/directory> -a <archiveName>
+
+python3.12 ./merge.py <path/to/cbzs/directory> -a <archiveName>
 
 # Convert to PDF
-python ./merge.py <path/to/cbzs/directory> -a <archiveName> --pdf
-#+end_src
-Where:
-+ <path/to/cbz/directory> is the path to the directory that contains all the CBZ files to be merged.
-+ <archiveName> is how you want to name the final file.
 
-*** Example
+python3.12 ./merge.py <path/to/cbzs/directory> -a <archiveName> --pdf
+
+Where:
+
+- <path/to/cbz/directory> is the path to the directory that contains all the CBZ files to be merged.
+- <archiveName> is how you want to name the final file.
+
+Example:
 Using a file structure where your CBZs are stored inside a directory called "mangas":
-#+begin_example
 /
 │
 ├── share
-│   └── mangas  <-- This is the directory we want!
-│       ├ [Vol 00] Chapter 1.cbz
-│       ├ [Vol 00] Chapter 2.cbz
-│       ├ [Vol 00] Chapter 3.cbz
-│       ├ [Vol 00] Chapter 4.cbz
-│       ├ ...
-│       └ [Vol 19] Chapter 268.cbz
+│ └── mangas <-- This is the directory we want!
+│ ├ [Vol 00] Chapter 1.cbz
+│ ├ [Vol 00] Chapter 2.cbz
+│ ├ [Vol 00] Chapter 3.cbz
+│ ├ [Vol 00] Chapter 4.cbz
+│ ├ ...
+│ └ [Vol 19] Chapter 268.cbz
 ....
-#+end_example
 
-+ Using this structure, our path would be: ~/share/mangas~
-+ Assume we want to call our archive as: ~myArchive~
-+ And finally, we want to generate it as a CBZ, so we *won't* use the ~--pdf~ option.
+- Using this structure, our path would be: ~/share/mangas~
+- Assume we want to call our archive as: ~myArchive~
+- And finally, we want to generate it as a CBZ, so we _won't_ use the ~--pdf~ option.
 
 Then, we would run the command as:
-#+begin_src sh
-python ./merge.py /share/mangas -a myArchive
-#+end_src
 
-** Create a file per volume
+python3.12 ./merge.py /share/mangas -a myArchive
+
+Create a file per volume:
 This is great if you would rather to have several smaller files per
 volume, instead of having one monolithic main file with thousands
 of images.
 
-#+begin_src sh
-# One of either:
-
 # Each volume is a CBZ archive
+
 python3.12 ./merge.py <path/to/cbzs/directory> -vo "<regex>"
 
 # Each volume is a PDF file
+
 python3.12 ./merge.py <path/to/cbzs/directory> -vo "<regex>" --pdf
-#+end_src
+
 Where:
-+ <path/to/cbz/directory> is the path to the directory that contains all the CBZ files to be merged.
-+ <regex> is a [[https://docs.python.org/3/howto/regex.html][regular expression]] that tells the program the naming convention of your volumes.
+
+- <path/to/cbz/directory> is the path to the directory that contains all the CBZ files to be merged.
+- <regex> is a [[https://docs.python.org/3/howto/regex.html][regular expression]] that tells the program the naming convention of your volumes.
 
 Note that you don't need to specify an output name (like when
 generating an archive), because the files will be named just like
 the volumes.
 
-*** Example
+Example:
 To use this mode your CBZ files must have their volume in their name.
 For example, using the same structure as in the previous example:
-#+begin_example
+
 /
 │
 ├── share
-│   └── mangas  <-- This is the directory we want!
-│       ├ [Vol 00] Chapter 1.cbz
-│       ├ [Vol 00] Chapter 2.cbz
-│       ├ [Vol 00] Chapter 3.cbz
-│       ├ [Vol 00] Chapter 4.cbz
-│       ├ ...
-│       └ [Vol 19] Chapter 268.cbz
+│ └── mangas <-- This is the directory we want!
+│ ├ [Vol 00] Chapter 1.cbz
+│ ├ [Vol 00] Chapter 2.cbz
+│ ├ [Vol 00] Chapter 3.cbz
+│ ├ [Vol 00] Chapter 4.cbz
+│ ├ ...
+│ └ [Vol 19] Chapter 268.cbz
 ....
-#+end_example
-+ Our path would be: ~/share/mangas~
-+ We want to output a PDF file per volume, so we use ~--pdf~.
-+ Our regex could be either ~Vol \d\d~ or ~Vol \d{2}~.
+
+- Our path would be: ~/share/mangas~
+- We want to output a PDF file per volume, so we use ~--pdf~.
+- Our regex could be either ~Vol \d\d~ or ~Vol \d{2}~.
 
 Then, we would run:
-#+begin_src sh
 python3.12 ./merge.py /share/mangas -vo "Vol \d\d" --pdf
-#+end_src
 
-* Closing thoughts
-I have updated the code to work in Python3.12. It was using older dependencies and did not function as expected. Now it functions. There is an error when merging cbz files, but
+- Closing thoughts
+  I have updated the code to work in Python3.12. It was using older dependencies and did not function as expected. Now it functions as expected. If you run into any issues, please get in touch with me.
