@@ -133,7 +133,7 @@ def mergeImages(args):
     """
     Zips the renamed images, using the selected option:
     DEFAULT: Merge all the images in a single cbz archive.
-    --volumize: Create one archive per volume, following the user provided regex e.g. r'Vol \d+'
+    --volumize: Create one archive per volume, following the user provided regex.
     --chapterize: Create one archive for every <N> chapters, where <N> is indicated by the user.
     --maxsize: Create the necessary cbz archives, with the restriction that each one must have
                 a size smaller than <M> (provided by the user).
@@ -431,7 +431,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-vo",
         "--volumize",
-        help="generate one archive per volume, using user provided regex",
+        help=r"generate one archive per volume, using user provided regex",
         default=False,
         type=str,
     )

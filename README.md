@@ -36,12 +36,10 @@ You can merge all your files into one of the two following options:
 
 * Pre-requisites
 You'll need:
-+ Python3
++ Python3.12 (It does not work on the latest version of Python at the time of publishing, Python 3.14)
 + pip
 + Your CBZ files should have ordered alphabetically. (This should be de default if you download in bulk your mangas, because they should come sorted in some way so that you can easily read each chapter in order)
 
-I'm using Python 3.9.5, so if you got any problems, try to use at least
-this version.
 
 Get the latest version in your favorite Linux flavor.
 (Snipets taken from [[https://www.csestack.org/install-python-on-linux/][CSEstack]] and [[https://linuxconfig.org/install-pip-on-linux/][linuxconfig]])
@@ -52,7 +50,7 @@ Get the latest version in your favorite Linux flavor.
 sudo apt-get update
 
 # Install python3
-sudo apt-get install python
+sudo apt-get install python3.12
 
 # Install pip for python3
 sudo apt install python3-pip
@@ -61,7 +59,7 @@ sudo apt install python3-pip
 ** Arch Linux
 #+begin_src sh
 # Install python3
-sudo pacman -S python
+sudo pacman -S python3.12
 
 # Install pip
 sudo pacman -S python-pip
@@ -70,13 +68,13 @@ sudo pacman -S python-pip
 ** DNF package manager (Fedora)
 #+begin_src sh
 # This installs both python and pip, in a nice little bundle. How convenient!
-sudo dnf install python3
+sudo dnf install python3.12
 #+end_src
 
 ** Yum package manager (Redhat / RHEL / CentOS)
 #+begin_src sh
 # Install python3
-sudo yum install python
+sudo yum install python.12
 
 # pip is not available on core repositories, so you'll need this
 sudo yum install epel-release
@@ -97,12 +95,12 @@ You'll need to:
 
 #+begin_src sh
 # Get the repo
-git clone https://github.com/LeobardoArguelles/cbz-merger.git
+git clone https://github.com/superslacker87/cbz-merger.git
 cd cbz-merger
 
 # Create a virtual environment
 pip install virtualenv
-python -m venv venv
+python3.12 -m venv venv
 
 # Activate the virtual environment
 source venv/bin/activate
@@ -171,10 +169,10 @@ of images.
 # One of either:
 
 # Each volume is a CBZ archive
-python ./merge.py <path/to/cbzs/directory> -vo "<regex>"
+python3.12 ./merge.py <path/to/cbzs/directory> -vo "<regex>"
 
 # Each volume is a PDF file
-python ./merge.py <path/to/cbzs/directory> -vo "<regex>" --pdf
+python3.12 ./merge.py <path/to/cbzs/directory> -vo "<regex>" --pdf
 #+end_src
 Where:
 + <path/to/cbz/directory> is the path to the directory that contains all the CBZ files to be merged.
@@ -206,15 +204,8 @@ For example, using the same structure as in the previous example:
 
 Then, we would run:
 #+begin_src sh
-python ./merge.py /share/mangas -vo "Vol \d\d" --pdf
+python3.12 ./merge.py /share/mangas -vo "Vol \d\d" --pdf
 #+end_src
 
 * Closing thoughts
-This is the first tool that I actually release for public usage.
-
-I made it for myself, but I tried to generalize it so that it can be used by other persons.
-I hope that you find it helpful.
-
-If you have any problem feel free to open an issue, and if you've got suggestions or ideas to expand this tool,
-I would love for you to get in touch.
-
+I have updated the code to work in Python3.12. It was using older dependencies and did not function as expected. Now it functions. There is an error when merging cbz files, but
