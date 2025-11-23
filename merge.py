@@ -1,8 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
-import cli.app
-import cli.log
+import argparse
 import logging
 import re
 from math import floor
@@ -15,11 +14,10 @@ from shutil import copy2
 from natsort import natsorted
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A5
-from PyPDF2 import PdfFileMerger
+from pypdf import PdfMerger
 from sys import exit
 
-LOGGER = cli.log.CommandLineLogger(__name__)
-LOGGER.addHandler(logging.StreamHandler())
+LOGGER = logging.getLogger(__name__)
 
 # Directory with the extracted images, divided in folders
 EXTRACT_DIR = '.extracted'
@@ -34,14 +32,14 @@ main_dir = ''
 # CPUs availables for parallel work
 CPU_COUNT = cpu_count()
 
-@cli.log.LoggingApp
-def merge(app):
-
-    # Set parameters
-    LOGGER.setLevel(merge.params)
+def main(args):
+    """
+    Main function.
+    """
+    LOGGER.setLevel(args.log_level)
 
     global main_dir
-    main_dir = merge.params.path
+    main_dir = args.path
 
     # Try to move to the path provided
     try:
@@ -52,7 +50,7 @@ def merge(app):
         raise e
 
     try:
-        isPdf = True if merge.params.pdf else False
+        isPdf = args.pdf
 
         # Extract zips
         pool = Pool(CPU_COUNT)
@@ -64,11 +62,11 @@ def merge(app):
         makeDirectory(ZIP_DIR)
         dirs = groupDirs(os.listdir(path.join('.', EXTRACT_DIR)), CPU_COUNT)
         for i in range(len(dirs)):
-            p = Process(target=mapExtractedImages, args=(dirs[i], isPdf, main_dir))
+            p = Process(target=mapExtractedImages, args=(dirs[i], isPdf, main_dir, args))
             p.start()
             p.join()
 
-        mergeImages()
+        mergeImages(args)
 
     except Exception as e:
         print(e)
@@ -131,17 +129,17 @@ def renameImages():
             copy2(path.join(currentDir, img), path.join(topDir, ZIP_DIR, dir + '-' + str(counter) + ext))
 
 
-def mergeImages():
+def mergeImages(args):
     """
     Zips the renamed images, using the selected option:
     DEFAULT: Merge all the images in a single cbz archive.
-    --volumize: Create one archive per volume, following the user provided regex e.g. 'Vol \d+'
+    --volumize: Create one archive per volume, following the user provided regex e.g. r'Vol \d+'
     --chapterize: Create one archive for every <N> chapters, where <N> is indicated by the user.
     --maxsize: Create the necessary cbz archives, with the restriction that each one must have
                 a size smaller than <M> (provided by the user).
     """
     topDir = os.getcwd()
-    isPdf = askIfPdf()
+    isPdf = askIfPdf(args)
 
     # File extension for generated zip files
     ARCHIVE_EXT = '.pdf' if isPdf else '.cbz'
@@ -153,10 +151,10 @@ def mergeImages():
     os.chdir(IMGS_DIR)
 
     # Organize chapters by volume
-    if merge.params.volumize:
+    if args.volumize:
         LOGGER.info('Starting to volumize chapters.')
         # Get stes of pre-sorted volumes keys, and all the images extracted
-        volumes = getVolumes(IMGS_DIR)
+        volumes = getVolumes(IMGS_DIR, args)
 
         # Merge images by volume
 
@@ -181,7 +179,7 @@ def mergeImages():
 
     else:
         LOGGER.info('Creating archive...')
-        ARCHIVE = path.join(topDir, merge.params.archive + ARCHIVE_EXT)
+        ARCHIVE = path.join(topDir, args.archive + ARCHIVE_EXT)
         if isPdf:
             # We will need to generate temp files and merge them.
             LOGGER.info('We will need to create some temporary pdfs...')
@@ -241,7 +239,7 @@ def segmentImgs(imgs, cap):
 
     return [imgs[0:cap]] + segmentImgs(imgs[cap:], cap)
 
-def getVolumes(dir):
+def getVolumes(dir, args):
     """
     Get the name of all the volumes located in <dir>, using the user-provided
     regex expression to identify them.
@@ -251,7 +249,7 @@ def getVolumes(dir):
     """
     LOGGER.info('Getting dictionary of volumes and chapters')
     imgs = natsorted(os.listdir(dir))
-    pat = re.compile(merge.params.volumize)
+    pat = re.compile(args.volumize)
     currentVol = re.search(pat, imgs[0])[0]
 
     matches = list()
@@ -275,7 +273,7 @@ def getVolumes(dir):
     return volumes
 
 
-def convertToPdf(img, destination, n):
+def convertToPdf(img, destination, n, args):
     """
     Converts <img> to pdf. Store the pdf in
     the current directory
@@ -293,12 +291,12 @@ def convertToPdf(img, destination, n):
     LOGGER.info('-'*50)
     LOGGER.info('Converting: ' + origname + ' ---> ' + name)
 
-    file = Canvas(name, pagesize=A5, pageCompression=merge.params.compression)
+    file = Canvas(name, pagesize=A5, pageCompression=args.compression)
     file.drawImage(img, 0, 0, w, h)
     file.save()
 
 
-def renameKeepExtension(origin, destination, n):
+def renameKeepExtension(origin, destination, n, args):
     """
     Moves image located in <origin> to <destination> directory, renaming it
     in the process.
@@ -316,7 +314,7 @@ def renameKeepExtension(origin, destination, n):
     copy2(origin, path.join(destination + '-' + n + ext))
 
 
-def mapExtractedImages(dirs, isPdf, main_dir):
+def mapExtractedImages(dirs, isPdf, main_dir, args):
     """
     Applies function <f> to every image in dirs.
     :param dirs: Collection of images to apply <f>
@@ -342,7 +340,7 @@ def mapExtractedImages(dirs, isPdf, main_dir):
             n = str(counter)
 
 
-            f(origin, destination, n)
+            f(origin, destination, n, args)
 
             counter += 1
 
@@ -370,30 +368,16 @@ def groupZips(zips, n):
             number of files, if possible. The last group may have less
             files.
     """
-    zips = natsorted(zips)
-    length = len(zips)
-    groupSize = floor(length / n) | 1
-    groups = []
-
-    for i in range(0, length, groupSize):
-        if i + groupSize == length:
-            groups.append(zips[i:])
-        else:
-            groups.append(zips[i:i + groupSize])
-
-    if i + groupSize < length - 1:
-        groups.append(zips[i + groupSize:])
-
-    return groups
+    return [zips[i::n] for i in range(n)]
 
 
-def askIfPdf():
+def askIfPdf(args):
     """
-    Checks if user asked for pdf outputs, which is denoted if merge.params.pdf
+    Checks if user asked for pdf outputs, which is denoted if args.pdf
     is set to true.
     :return: True if user asked for pdf output, False otherwise
     """
-    return merge.params.pdf
+    return args.pdf
 
 
 def makeTempPdf(path, imgs):
@@ -434,16 +418,43 @@ def makeVolume(path, isPdf, imgs):
 # Alias
 groupDirs = groupZips
 
-# parameters
-merge.add_param('path', help='path to your cbz archives', type=str)
-merge.add_param('-a', '--archive', help='name of your compressed cbz file', type=str, default='CBZ_Archive')
-merge.add_param('-vo', '--volumize', help='generate one archive per volume, using user provided regex', default=False, type=str)
-merge.add_param('--pdf', help='output in pdf format', default=False, action="store_true")
-merge.add_param('--compression', help='pdf pages compression from 0 to 1', default=0.8)
-
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Merge CBZ archives.")
+    parser.add_argument("path", help="path to your cbz archives", type=str)
+    parser.add_argument(
+        "-a",
+        "--archive",
+        help="name of your compressed cbz file",
+        type=str,
+        default="CBZ_Archive",
+    )
+    parser.add_argument(
+        "-vo",
+        "--volumize",
+        help="generate one archive per volume, using user provided regex",
+        default=False,
+        type=str,
+    )
+    parser.add_argument(
+        "--pdf", help="output in pdf format", default=False, action="store_true"
+    )
+    parser.add_argument(
+        "--compression",
+        help="pdf pages compression from 0 to 1",
+        default=0.8,
+        type=float,
+    )
+    parser.add_argument(
+        "-ll",
+        "--log-level",
+        help="set log level",
+        default="INFO",
+        type=str,
+        choices=["INFO", "DEBUG", "ERROR"],
+    )
+    args = parser.parse_args()
     try:
-        merge.run()
+        main(args)
     except Exception as e:
         print(e)
         raise e
