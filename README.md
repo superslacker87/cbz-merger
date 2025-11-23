@@ -1,8 +1,8 @@
-- What is it?
-  A cli-tool to merge several CBZ (zip) files into one main archive, or several archives divided by volume.
+What is it?
+-  A cli-tool to merge several CBZ (zip) files into one main archive, or several archives divided by volume.
 
-- Why use it?
-  Works great if you download full comics/mangas, which come in come organized in CBZ files (one CBZ per chapter, each one containing
+Why use it?
+ - Works great if you download full comics/mangas, which come in come organized in CBZ files (one CBZ per chapter, each one containing
   one image per page).
   That's a lot of images!
 
@@ -10,22 +10,19 @@ And if you would rather organize them in a single main file, or a file per volum
 
 This is also great if you read them on some kind of e-reader, like Kobo, since you will have less files to manage.
 
-[[./imgs/cbz-showcase.png]]
 
-- Export modes
-  You can merge all your files into one of the two following options:
-
-* One main file containing all the pages of your comic/manga.
-* One file per volume, each one containing only the pages of its chapters.
+Export modes:
+- You can merge all your files into one of the two following options:
+  - One main file containing all the pages of your comic/manga.
+  - One file per volume, each one containing only the pages of its chapters.
 
 _Each of these can be exported into either PDF, or CBZ._
 
 - Pre-requisites
   You'll need:
-
-* Python3.12 (It does not work on the latest version of Python3 at the time of publishing, version Python 3.14)
-* pip
-* Your CBZ files should have ordered alphabetically. (This should be de default if you download in bulk your mangas, because they should come sorted in some way so that you can easily read each chapter in order)
+  - Python3.12 (It does not work on the latest version of Python3 at the time of publishing, version Python 3.14)
+  - pip
+  - Your CBZ files should have ordered alphabetically. (This should be de default if you download in bulk your mangas, because they should come sorted in some way so that you can easily read each chapter in order)
 
 Ensure you have version 3.12 installed alongside whatever version is currently installed. You can use both concurrently. Run the correct command for your flavor of Linux, or install the executable from the Python website
 
@@ -36,17 +33,17 @@ sudo pacman -S python3.12
 sudo dnf install python3.12
 
 - Installation
-  \1. Clone the repository
-
+1. Clone the repository
 2. Move inside the repo's directory
 3. [Optional] Create a virtual environment
    This might not be obligatory, but is highly recommendable to have a virtual environment for each project, to avoid conflicts between libraries and
    versions.
-4. Install the requirements (remember that you need Python for this)
+4. Install the requirements (remember that you need Python 3.12 for this)
 
 # Get the repo
 
 git clone https://github.com/superslacker87/cbz-merger.git
+
 cd cbz-merger
 
 # Create a virtual environment
