@@ -14,7 +14,7 @@ from shutil import copy2
 from natsort import natsorted
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A5
-from pypdf import PdfMerger
+from pypdf import PdfWriter
 from sys import exit
 
 LOGGER = logging.getLogger(__name__)
@@ -87,6 +87,8 @@ def extractCbz(zips):
     # Extract cbz files and move them to their own folder, inside
     # <EXTRACT_DIR>
     for file in natsorted(zips):
+        if not file.endswith(('.cbz', '.zip')):
+            continue
 
         if file == EXTRACT_DIR or file == ZIP_DIR or not os.path.isfile(file):
             continue
@@ -186,13 +188,13 @@ def mergeImages(args):
             queue = []
             counter = 0
             allImgs = natsorted(os.listdir('.'))
-            # Cap open files at 1 000 to prevent errors
-            imgsSets = segmentImgs(allImgs, 1000)
+            # Cap open files at 250 to prevent errors
+            imgsSets = segmentImgs(allImgs, 250)
 
             # Create a temporary file per image set
             LOGGER.info('Creating temporary files')
             for imgs in imgsSets:
-                temp = path.join(topDir, merge.params.archive + '-' + str(counter) + ARCHIVE_EXT)
+                temp = path.join(topDir, args.archive + '-' + str(counter) + ARCHIVE_EXT)
                 p = Process(target=makeTempPdf, args=(temp, imgs))
                 p.start()
                 p.join()
@@ -201,7 +203,7 @@ def mergeImages(args):
 
             # Merge temporary files and clean up
             LOGGER.info('Now we can merge all temp files into our archive.')
-            merger = PdfFileMerger()
+            merger = PdfWriter()
             queueLength = len(queue)
             counter = 1
             for i in range(queueLength):
@@ -388,7 +390,7 @@ def makeTempPdf(path, imgs):
     :param path: Path to save the temp file to
     :param imgs: Pdf files of imgs to be merged
     """
-    merger = PdfFileMerger()
+    merger = PdfWriter()
     for img in imgs:
         merger.append(img)
     merger.write(path)
@@ -404,7 +406,7 @@ def makeVolume(path, isPdf, imgs):
     """
 
     if isPdf:
-        merger = PdfFileMerger()
+        merger = PdfWriter()
         for img in imgs:
             merger.append(img)
         merger.write(path)
